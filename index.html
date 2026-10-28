@@ -327,9 +327,8 @@ details.panel>summary:focus-visible{outline:3px solid var(--k);outline-offset:4p
       '<div><span>Privat bis dahin gesamt</span><b>'+f(privSum(s))+'</b></div>';
     return '<div class="person" style="--c:'+o.c+'"><header><h3>'+o.name+'</h3><span class="tag">schuldet K 90.000 € plus Zinsen</span></header>'+
       '<div class="hero">'+u(pay)+' <small>an K'+sfx()+'</small></div>'+
-      '<div class="heroSub">'+alt(pay)+', privat bleiben '+u(th-ft)+sfx()+'</div>'+
       '<div class="split"><div style="width:'+(100-pr)+'%;background:'+o.c2+'"></div><div style="width:'+pr+'%;background:'+o.c+'"></div></div>'+
-      '<div class="splitlab"><span>Zahlung an K aus dem Drittel</span><span>privat</span></div>'+
+      '<div class="splitlab"><span>an K: '+u(ft)+'</span><span>privat: '+u(th-ft)+'</span></div>'+
       '<table><thead><tr><th></th><th>pro Monat</th><th>pro Jahr</th></tr></thead><tbody>'+
       '<tr><td>Aus dem Drittel an K</td><td>'+f(ft/12)+'</td><td>'+f(ft)+'</td></tr>'+
       '<tr><td>Zusätzlich an K</td><td>'+f(ex/12)+'</td><td>'+f(ex)+'</td></tr>'+
@@ -355,9 +354,8 @@ details.panel>summary:focus-visible{outline:3px solid var(--k);outline-offset:4p
       '<div><span>Summe gesamt bis Jahr '+M+'</span><b>'+f(thSum+payPR+V3+salePR)+'</b></div>';
     return '<div class="person" style="--c:var(--k)"><header><h3>K</h3><span class="tag">hat 270.000 € vorgestreckt</span></header>'+
       '<div class="hero">'+u(tot)+' <small>gesamt'+sfx()+'</small></div>'+
-      '<div class="heroSub">'+alt(tot)+', solange P und R zahlen</div>'+
       '<div class="split"><div style="width:'+(tot>0?th/tot*100:100)+'%;background:var(--k)"></div><div style="width:'+(tot>0?zp/tot*100:0)+'%;background:var(--pp)"></div><div style="width:'+(tot>0?zr/tot*100:0)+'%;background:var(--rr)"></div></div>'+
-      '<div class="splitlab"><span>eigenes Drittel</span><span>Zahlung von P</span><span>Zahlung von R</span></div>'+
+      '<div class="splitlab"><span>K: '+u(th)+'</span><span>P: '+u(zp)+'</span><span>R: '+u(zr)+'</span></div>'+
       '<table><thead><tr><th></th><th>pro Monat</th><th>pro Jahr</th></tr></thead><tbody>'+
       '<tr><td>Eigenes Drittel</td><td>'+f(th/12)+'</td><td>'+f(th)+'</td></tr>'+
       '<tr><td>Zahlung von P</td><td>'+f(zp/12)+'</td><td>'+f(zp)+'</td></tr>'+
