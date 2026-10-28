@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="de"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Auszahlungsrechner Haus</title>
+<style>
+:root{
+  --bg:#f6f7f5; --surface:#ffffff; --ink:#1c2321; --muted:#5d6864; --line:#dfe3e0;
+  --k:#2b5fa8; --kk:#8fb1de; --p:#c07a12; --pp:#e6bf7e; --r:#2f8a5b; --rr:#8fcaa8;
+  --res:#8a948f; --rep:#b7bfbb; --wg:#7a5aa6; --wh:#a65a7a; --free:#e3e7e4;
+  --warn:#b3261e;
+  --chip:#e9eeeb; --chip-on:#1c2321; --chip-on-ink:#ffffff;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#141917; --surface:#1d2420; --ink:#e8ede9; --muted:#98a39d; --line:#2f3833;
+    --k:#6f9fe0; --kk:#3f6aa8; --p:#e0a64a; --pp:#8f6a2a; --r:#5fc08d; --rr:#356f50;
+    --res:#7d8883; --rep:#58635d; --wg:#b79ae0; --wh:#e09ab7; --free:#2c3631;
+    --warn:#ff8a80;
+    --chip:#27302b; --chip-on:#e8ede9; --chip-on-ink:#141917;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#141917; --surface:#1d2420; --ink:#e8ede9; --muted:#98a39d; --line:#2f3833;
+  --k:#6f9fe0; --kk:#3f6aa8; --p:#e0a64a; --pp:#8f6a2a; --r:#5fc08d; --rr:#356f50;
+  --res:#7d8883; --rep:#58635d; --wg:#b79ae0; --wh:#e09ab7; --free:#2c3631;
+  --warn:#ff8a80;
+  --chip:#27302b; --chip-on:#e8ede9; --chip-on-ink:#141917;
+  color-scheme:dark;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  line-height:1.5;font-size:16px}
+.wrap{max-width:1080px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:1.6rem;margin:8px 0 4px;letter-spacing:-.01em}
+h2{font-size:1.05rem;margin:0 0 12px}
+h3{font-size:1.1rem;margin:0}
+.sub{color:var(--muted);margin:0 0 16px;max-width:72ch}
+.toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.toolbar span{font-weight:600;font-size:.92rem}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
+.poolbar{display:flex;flex-wrap:wrap;gap:6px 20px;align-items:baseline;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.poolbar b{font-size:1.5rem;font-variant-numeric:tabular-nums}
+.poolbar span{color:var(--muted);font-size:.9rem}
+.group{font-weight:600;font-size:.9rem;margin:18px 0 8px;color:var(--muted)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 10px;align-items:center}
+.chips .who{font-weight:600;min-width:150px;font-size:.92rem}
+.chip{border:0;background:var(--chip);color:var(--ink);padding:9px 14px;border-radius:999px;font:inherit;font-size:.9rem;font-weight:600;cursor:pointer;min-height:44px}
+.chip[aria-pressed="true"]{background:var(--chip-on);color:var(--chip-on-ink)}
+.chip:disabled{opacity:.45;cursor:not-allowed}
+.chip:focus-visible,input:focus-visible{outline:3px solid var(--k);outline-offset:2px}
+.sliders{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px 28px}
+.sl label{display:flex;justify-content:space-between;gap:4px 8px;font-size:.92rem;margin-bottom:2px;flex-wrap:wrap}
+.sl output{font-weight:600;font-variant-numeric:tabular-nums}
+.sl .hint{color:var(--muted);font-size:.82rem;margin-top:2px}
+input[type=range]{width:100%;accent-color:var(--k);height:32px;margin:0}
+input[type=range]:disabled{opacity:.45}
+.sl.p input{accent-color:var(--p)} .sl.r input{accent-color:var(--r)}
+.check{display:flex;align-items:center;gap:10px;font-weight:600;margin-bottom:12px;min-height:44px}
+.check input{width:22px;height:22px;accent-color:var(--k)}
+.warn{color:var(--warn);font-weight:600;margin:0 0 10px}
+.ok{font-weight:600;margin:0 0 12px}
+.note{color:var(--muted);font-size:.85rem;margin:8px 0 0}
+.bar{display:flex;height:34px;border-radius:8px;overflow:hidden;background:var(--free);border:1px solid var(--line)}
+.bar div{min-width:0}
+.uselist{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:6px 24px;margin-top:12px;font-size:.9rem}
+.use{display:flex;justify-content:space-between;gap:10px;align-items:center;border-bottom:1px solid var(--line);padding:4px 0}
+.use span:first-child{display:flex;align-items:center;gap:8px}
+.use i{width:12px;height:12px;border-radius:3px;display:inline-block;flex:none;border:1px solid var(--line)}
+.use b{font-variant-numeric:tabular-nums}
+.persons{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:16px;margin-bottom:16px}
+.person{background:var(--surface);border:1px solid var(--line);border-top:6px solid var(--c);border-radius:12px;padding:18px}
+.person header{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:4px}
+.person .tag{color:var(--muted);font-size:.85rem}
+.hero{font-size:2.1rem;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.15;margin:8px 0 0}
+.hero small{font-size:.9rem;font-weight:400;color:var(--muted);letter-spacing:0}
+.heroSub{color:var(--muted);font-size:.9rem;margin-bottom:12px}
+.split{display:flex;height:12px;border-radius:6px;overflow:hidden;margin:0 0 4px;background:var(--free)}
+.splitlab{display:flex;justify-content:space-between;font-size:.8rem;color:var(--muted);margin-bottom:12px}
+.person table{font-size:.88rem;table-layout:auto}
+.person th{font-size:.74rem;padding:6px 6px;white-space:normal}
+.person td{padding:7px 6px}
+.person td:first-child{white-space:normal}
+.person tr.sum td{font-weight:600;border-top:2px solid var(--line)}
+.after{margin:10px 0 0;font-size:.88rem}
+.facts{margin:12px 0 0;padding:12px 0 0;border-top:1px solid var(--line);font-size:.88rem;display:grid;gap:6px}
+.facts div{display:flex;justify-content:space-between;gap:12px}
+.facts span:first-child{color:var(--muted)}
+.facts b{font-variant-numeric:tabular-nums;text-align:right}
+.scroll{overflow-x:auto;max-width:100%}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:.9rem}
+th,td{padding:8px 10px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{font-weight:600;color:var(--muted);font-size:.82rem}
+tfoot td{font-weight:600;border-top:2px solid var(--line)}
+tr.sale td{background:var(--chip);white-space:normal;text-align:left;min-width:520px;font-size:.85rem}
+svg.chart{width:100%;height:auto;display:block}
+details.panel>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:12px;min-height:44px}
+details.panel>summary::-webkit-details-marker{display:none}
+details.panel>summary::before{content:"";width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(-45deg);transition:transform .15s;flex:none;margin-left:4px}
+details.panel[open]>summary::before{transform:rotate(45deg)}
+details.panel>summary h2{margin:0}
+details.panel[open]>summary{margin-bottom:12px}
+details.panel>summary:focus-visible{outline:3px solid var(--k);outline-offset:4px;border-radius:6px}
+@media (prefers-reduced-motion:reduce){details.panel>summary::before{transition:none}}
+@media (max-width:640px){
+  table.stack thead{display:none}
+  table.stack,table.stack tbody,table.stack tfoot,table.stack tr{display:block;width:100%}
+  table.stack tr{border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin-bottom:10px}
+  table.stack td{display:flex;justify-content:space-between;gap:12px;border:0;padding:4px 0;white-space:normal;text-align:right;min-width:0}
+  table.stack td::before{content:attr(data-label);color:var(--muted);text-align:left;font-weight:400}
+  table.stack td:first-child{justify-content:flex-start;gap:.4em;font-weight:600;text-align:left;border-bottom:1px solid var(--line);padding-bottom:6px;margin-bottom:4px}
+  table.stack td:first-child::before{content:attr(data-label);color:inherit;font-weight:600}
+  table.stack td:empty{display:none}
+  table.stack tr.sale td{display:block;border:0}
+  table.stack tr.sale td::before{content:none}
+  table.stack tr.sale{background:var(--chip)}
+  table.stack tfoot tr{border-width:2px}
+}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.85rem;color:var(--muted);margin-top:6px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <noscript><p style="background:#fff3cd;color:#3d2f00;padding:10px 12px;border-radius:8px;font-size:.9rem">Die angezeigten Werte sind die Standardwerte. Zum Ändern der Regler muss JavaScript aktiv sein: Datei bitte im Browser öffnen (Safari oder Chrome), nicht in der Dateivorschau.</p></noscript>
+  <h1>Auszahlungsrechner Haus</h1>
+  <p class="sub">K hat die 270.000 € vorgestreckt. P und R schulden K je 90.000 € (ein Drittel). Sie zahlen das aus ihrem Drittel der Mieteinnahmen an K zurück, was sie sich nicht privat auszahlen, und zahlen darauf Zinsen. Zusätzlich können sie aus eigener Tasche mehr an K zahlen. K behält ihr ganzes Drittel und erhält die Zahlungen von P und R. Ist die Schuld getilgt, gehört P bzw. R das ganze Drittel privat.</p>
+
+  <div class="toolbar" role="group" aria-label="Anzeige der Beträge">
+    <span>Beträge anzeigen und einstellen</span>
+    <button class="chip" type="button" id="uM" aria-pressed="true">pro Monat</button>
+    <button class="chip" type="button" id="uY" aria-pressed="false">pro Jahr</button>
+  </div>
+
+  <div class="panel">
+    <h2 id="t1">Mieteinnahmen und Abzüge pro Monat</h2>
+    <div class="poolbar" id="poolbar"><b>3.667&nbsp;€</b><span>Pool im 1. Jahr pro Monat nach allen Abzügen</span><span>Drittelanteil je Person: 1.222&nbsp;€</span><span>Nach dem Verkauf: Pool 4.333&nbsp;€, Drittel 1.444&nbsp;€</span></div>
+    <div class="sliders">
+      <div class="sl"><label for="income">Mieteinnahmen <output id="o_income">6.667&nbsp;€ (80.000&nbsp;€ pro Jahr)</output></label><input type="range" id="income" min="1500" max="12500" step="100" value="6700"></div>
+      <div class="sl"><label for="reserve">Rücklagen <output id="o_reserve">833&nbsp;€ (10.000&nbsp;€ pro Jahr)</output></label><input type="range" id="reserve" min="0" max="4200" step="50" value="850"></div>
+      <div class="sl"><label for="repair">Reparaturen <output id="o_repair">833&nbsp;€ (10.000&nbsp;€ pro Jahr)</output></label><input type="range" id="repair" min="0" max="3400" step="50" value="850"></div>
+      <div class="sl"><label for="gato">Wohnung Gatow, Grundkosten bis zum Verkauf <output id="o_gato">667&nbsp;€ (8.000&nbsp;€ pro Jahr)</output></label><input type="range" id="gato" min="0" max="1700" step="10" value="670"></div>
+      <div class="sl"><label for="husum">Wohnung Husum, Grundkosten <output id="o_husum">667&nbsp;€ (8.000&nbsp;€ pro Jahr)</output></label><input type="range" id="husum" min="0" max="1700" step="10" value="670"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Verkauf Wohnung Gatow</h2>
+    <label class="check"><input type="checkbox" id="saleOn" checked=""> Verkauf berücksichtigen</label>
+    <div class="sliders">
+      <div class="sl"><label for="sale">Verkaufserlös, einmalig <output id="o_sale">100.000&nbsp;€</output></label><input type="range" id="sale" min="50000" max="200000" step="5000" value="100000"></div>
+      <div class="sl"><label for="saleYear">Verkauf nach <output id="o_saleYear">5 Jahren</output></label><input type="range" id="saleYear" min="0" max="20" step="1" value="5"></div>
+    </div>
+    <p class="note" id="saleNote">Der Erlös wird gedrittelt: 33.333&nbsp;€ je Person. Die Drittel von P und R tilgen ihre Schuld an K, K behält ihres. Die Grundkosten von Gatow (8.000&nbsp;€ pro Jahr) fallen ab dem Verkauf weg.</p>
+  </div>
+
+  <div class="panel">
+    <h2 id="t2">Was sich P und R privat auszahlen pro Monat</h2>
+    <div class="sliders">
+      <div class="sl p"><label for="rpp">P, privat <output id="o_rpp">500&nbsp;€ (6.000&nbsp;€ pro Jahr)</output></label><input type="range" id="rpp" min="0" max="2000" step="50" value="500"><div class="hint" id="h_rpp">Zahlung an K im 1. Jahr: 722&nbsp;€ pro Monat, fertig nach 7 Jahren</div></div>
+      <div class="sl r"><label for="rr">R, privat <output id="o_rr">500&nbsp;€ (6.000&nbsp;€ pro Jahr)</output></label><input type="range" id="rr" min="0" max="2000" step="50" value="500"><div class="hint" id="h_rr">Zahlung an K im 1. Jahr: 722&nbsp;€ pro Monat, fertig nach 7 Jahren</div></div>
+    </div>
+    <div class="group" id="t2b">Zusätzliche Zahlung an K aus eigener Tasche pro Monat</div>
+    <div class="sliders">
+      <div class="sl p"><label for="xp">P, zusätzlich an K <output id="o_xp">0&nbsp;€ (0&nbsp;€ pro Jahr)</output></label><input type="range" id="xp" min="0" max="3000" step="50" value="0"></div>
+      <div class="sl r"><label for="xr">R, zusätzlich an K <output id="o_xr">0&nbsp;€ (0&nbsp;€ pro Jahr)</output></label><input type="range" id="xr" min="0" max="3000" step="50" value="0"></div>
+      <div class="sl"><label for="rate">Zins auf die Schuld von P und R <output id="o_rate">2,0 %</output></label><input type="range" id="rate" min="0" max="6" step="0.1" value="2"></div>
+    </div>
+    <p class="note" style="margin-top:14px">Schnellwahl: Wie viel darf sich die Person privat auszahlen, damit die 90.000 € in der Zielzeit an K zurückgezahlt sind (mit der eingestellten Zusatzzahlung)?</p>
+    <div id="chips"><div class="chips"><span class="who">P, zurückgezahlt in</span><button class="chip" type="button" data-w="rpp" data-n="10" aria-pressed="false">10 Jahre (750&nbsp;€)</button><button class="chip" type="button" data-w="rpp" data-n="12" aria-pressed="false">12 Jahre (850&nbsp;€)</button><button class="chip" type="button" data-w="rpp" data-n="15" aria-pressed="false">15 Jahre (950&nbsp;€)</button></div><div class="chips"><span class="who">R, zurückgezahlt in</span><button class="chip" type="button" data-w="rr" data-n="10" aria-pressed="false">10 Jahre (750&nbsp;€)</button><button class="chip" type="button" data-w="rr" data-n="12" aria-pressed="false">12 Jahre (850&nbsp;€)</button><button class="chip" type="button" data-w="rr" data-n="15" aria-pressed="false">15 Jahre (950&nbsp;€)</button></div></div>
+  </div>
+
+  <div id="warn"><p class="ok">Zahlung an K endet nach: P 7 Jahren, R 7 Jahren.</p></div>
+
+  <div class="panel">
+    <h2 id="t3">Verwendung der Mieteinnahmen im 1. Jahr pro Monat</h2>
+    <div class="bar" id="bar" role="img" aria-label="Aufteilung der Mieteinnahmen"><div title="Rücklagen: 833&nbsp;€" style="width:12.5%;background:var(--res)"></div><div title="Reparaturen: 833&nbsp;€" style="width:12.5%;background:var(--rep)"></div><div title="Wohnung Gatow: 667&nbsp;€" style="width:10%;background:var(--wg)"></div><div title="Wohnung Husum: 667&nbsp;€" style="width:10%;background:var(--wh)"></div><div title="K, eigenes Drittel: 1.222&nbsp;€" style="width:18.333333333333332%;background:var(--k)"></div><div title="P privat: 500&nbsp;€" style="width:7.5%;background:var(--p)"></div><div title="P Zahlung an K: 722&nbsp;€" style="width:10.833333333333332%;background:var(--pp)"></div><div title="R privat: 500&nbsp;€" style="width:7.5%;background:var(--r)"></div><div title="R Zahlung an K: 722&nbsp;€" style="width:10.833333333333332%;background:var(--rr)"></div></div>
+    <div class="uselist" id="uselist"><div class="use"><span><i style="background:var(--res)"></i>Rücklagen</span><b>833&nbsp;€</b></div><div class="use"><span><i style="background:var(--rep)"></i>Reparaturen</span><b>833&nbsp;€</b></div><div class="use"><span><i style="background:var(--wg)"></i>Wohnung Gatow</span><b>667&nbsp;€</b></div><div class="use"><span><i style="background:var(--wh)"></i>Wohnung Husum</span><b>667&nbsp;€</b></div><div class="use"><span><i style="background:var(--k)"></i>K, eigenes Drittel</span><b>1.222&nbsp;€</b></div><div class="use"><span><i style="background:var(--p)"></i>P privat</span><b>500&nbsp;€</b></div><div class="use"><span><i style="background:var(--pp)"></i>P Zahlung an K</span><b>722&nbsp;€</b></div><div class="use"><span><i style="background:var(--r)"></i>R privat</span><b>500&nbsp;€</b></div><div class="use"><span><i style="background:var(--rr)"></i>R Zahlung an K</span><b>722&nbsp;€</b></div><div class="use"><span><b>Mieteinnahmen</b></span><b>6.667&nbsp;€</b></div></div>
+    <p class="note">Die Zusatzzahlungen von P und R kommen aus eigener Tasche und sind hier nicht enthalten.</p>
+  </div>
+
+  <div class="persons" id="persons"><div class="person" style="--c:var(--k)"><header><h3>K</h3><span class="tag">hat 270.000 € vorgestreckt</span></header><div class="hero">2.667&nbsp;€ <small>gesamt pro Monat</small></div><div class="heroSub">32.000&nbsp;€ pro Jahr, solange P und R zahlen</div><div class="split"><div style="width:45.83333333333333%;background:var(--k)"></div><div style="width:54.16666666666667%;background:var(--kk)"></div></div><div class="splitlab"><span>eigenes Drittel</span><span>Zahlung von P und R</span></div><table><thead><tr><th></th><th>pro Monat</th><th>pro Jahr</th></tr></thead><tbody><tr><td>Eigenes Drittel</td><td>1.222&nbsp;€</td><td>14.667&nbsp;€</td></tr><tr><td>Zahlung von P</td><td>722&nbsp;€</td><td>8.667&nbsp;€</td></tr><tr><td>Zahlung von R</td><td>722&nbsp;€</td><td>8.667&nbsp;€</td></tr><tr class="sum"><td>Summe</td><td>2.667&nbsp;€</td><td>32.000&nbsp;€</td></tr></tbody></table><p class="after">Die Zahlung von P endet nach <b>7 Jahren</b>, die von R nach <b>7 Jahren</b>. Danach bleibt K ihr Drittel: <b>1.444&nbsp;€ pro Monat</b> (17.333&nbsp;€ pro Jahr).</p><div class="facts"><div><span>Eigenes Drittel gesamt bis Jahr 7</span><b>108.000&nbsp;€</b></div><div><span>Zahlungen von P und R gesamt</span><b>129.769&nbsp;€</b></div><div><span>Davon Zinsen</span><b>16.436&nbsp;€</b></div><div><span>Verkauf Gatow, eigenes Drittel</span><b>33.333&nbsp;€</b></div><div><span>Verkauf Gatow, Tilgung von P und R</span><b>66.667&nbsp;€</b></div><div><span>Summe gesamt bis Jahr 7</span><b>337.769&nbsp;€</b></div></div></div><div class="person" style="--c:var(--p)"><header><h3>P</h3><span class="tag">schuldet K 90.000 € plus Zinsen</span></header><div class="hero">500&nbsp;€ <small>privat pro Monat</small></div><div class="heroSub">6.000&nbsp;€ pro Jahr, Zahlung an K 722&nbsp;€ pro Monat</div><div class="split"><div style="width:40.909090909090914%;background:var(--p)"></div><div style="width:59.090909090909086%;background:var(--pp)"></div></div><div class="splitlab"><span>privat</span><span>Zahlung an K aus dem Drittel</span></div><table><thead><tr><th></th><th>pro Monat</th><th>pro Jahr</th></tr></thead><tbody><tr><td>Drittelanteil</td><td>1.222&nbsp;€</td><td>14.667&nbsp;€</td></tr><tr><td>Privat</td><td>500&nbsp;€</td><td>6.000&nbsp;€</td></tr><tr><td>Aus dem Drittel an K</td><td>722&nbsp;€</td><td>8.667&nbsp;€</td></tr><tr><td>Zusätzlich an K</td><td>0&nbsp;€</td><td>0&nbsp;€</td></tr><tr class="sum"><td>Zahlung an K gesamt</td><td>722&nbsp;€</td><td>8.667&nbsp;€</td></tr></tbody></table><p class="after">Danach ist das ganze Drittel privat: <b>1.444&nbsp;€ pro Monat</b> (17.333&nbsp;€ pro Jahr).</p><div class="facts"><div><span>Zahlung an K endet nach</span><b>7 Jahren</b></div><div><span>Privat bis dahin gesamt</span><b>43.115&nbsp;€</b></div><div><span>Zahlung an K gesamt, inkl. Zinsen</span><b>98.218&nbsp;€</b></div><div><span>Davon aus eigener Tasche</span><b>0&nbsp;€</b></div><div><span>Davon durch den Verkauf Gatow getilgt</span><b>33.333&nbsp;€</b></div><div><span>Davon Zinsen</span><b>8.218&nbsp;€</b></div><div><span>Davon Rückzahlung der 90.000 €</span><b>90.000&nbsp;€</b></div></div></div><div class="person" style="--c:var(--r)"><header><h3>R</h3><span class="tag">schuldet K 90.000 € plus Zinsen</span></header><div class="hero">500&nbsp;€ <small>privat pro Monat</small></div><div class="heroSub">6.000&nbsp;€ pro Jahr, Zahlung an K 722&nbsp;€ pro Monat</div><div class="split"><div style="width:40.909090909090914%;background:var(--r)"></div><div style="width:59.090909090909086%;background:var(--rr)"></div></div><div class="splitlab"><span>privat</span><span>Zahlung an K aus dem Drittel</span></div><table><thead><tr><th></th><th>pro Monat</th><th>pro Jahr</th></tr></thead><tbody><tr><td>Drittelanteil</td><td>1.222&nbsp;€</td><td>14.667&nbsp;€</td></tr><tr><td>Privat</td><td>500&nbsp;€</td><td>6.000&nbsp;€</td></tr><tr><td>Aus dem Drittel an K</td><td>722&nbsp;€</td><td>8.667&nbsp;€</td></tr><tr><td>Zusätzlich an K</td><td>0&nbsp;€</td><td>0&nbsp;€</td></tr><tr class="sum"><td>Zahlung an K gesamt</td><td>722&nbsp;€</td><td>8.667&nbsp;€</td></tr></tbody></table><p class="after">Danach ist das ganze Drittel privat: <b>1.444&nbsp;€ pro Monat</b> (17.333&nbsp;€ pro Jahr).</p><div class="facts"><div><span>Zahlung an K endet nach</span><b>7 Jahren</b></div><div><span>Privat bis dahin gesamt</span><b>43.115&nbsp;€</b></div><div><span>Zahlung an K gesamt, inkl. Zinsen</span><b>98.218&nbsp;€</b></div><div><span>Davon aus eigener Tasche</span><b>0&nbsp;€</b></div><div><span>Davon durch den Verkauf Gatow getilgt</span><b>33.333&nbsp;€</b></div><div><span>Davon Zinsen</span><b>8.218&nbsp;€</b></div><div><span>Davon Rückzahlung der 90.000 €</span><b>90.000&nbsp;€</b></div></div></div></div>
+
+  <details class="panel">
+    <summary><h2>Offene Schuld von P und R an K</h2></summary>
+    <div id="chart"><svg class="chart" viewBox="0 0 640 230" role="img" aria-label="Offene Schuld von P und R an K"><line x1="56" x2="630" y1="204" y2="204" stroke="var(--line)"></line><text x="50" y="208" text-anchor="end" font-size="11" fill="var(--muted)">0 T€</text><line x1="56" x2="630" y1="142.4126984126984" y2="142.4126984126984" stroke="var(--line)"></line><text x="50" y="146.4126984126984" text-anchor="end" font-size="11" fill="var(--muted)">30 T€</text><line x1="56" x2="630" y1="80.82539682539684" y2="80.82539682539684" stroke="var(--line)"></line><text x="50" y="84.82539682539684" text-anchor="end" font-size="11" fill="var(--muted)">60 T€</text><line x1="56" x2="630" y1="19.238095238095248" y2="19.238095238095248" stroke="var(--line)"></line><text x="50" y="23.238095238095248" text-anchor="end" font-size="11" fill="var(--muted)">90 T€</text><text x="56" y="224" text-anchor="middle" font-size="11" fill="var(--muted)">0</text><text x="138" y="224" text-anchor="middle" font-size="11" fill="var(--muted)">1</text><text x="220" y="224" text-anchor="middle" font-size="11" fill="var(--muted)">2</text><text x="302" y="224" text-anchor="middle" font-size="11" fill="var(--muted)">3</text><text x="384" y="224" text-anchor="middle" font-size="11" fill="var(--muted)">4</text><text x="466" y="224" text-anchor="middle" font-size="11" fill="var(--muted)">5</text><text x="548" y="224" text-anchor="middle" font-size="11" fill="var(--muted)">6</text><text x="630" y="224" text-anchor="middle" font-size="11" fill="var(--muted)">7</text><path d="M56.0 19.2 L138.0 33.3 L220.0 47.7 L302.0 62.4 L384.0 77.3 L466.0 161.0 L548.0 183.4 L630.0 204.0" fill="none" stroke="var(--r)" stroke-width="2.5"></path><path d="M56.0 19.2 L138.0 33.3 L220.0 47.7 L302.0 62.4 L384.0 77.3 L466.0 161.0 L548.0 183.4 L630.0 204.0" fill="none" stroke="var(--p)" stroke-width="2.5"></path></svg><div class="legend"><span><i style="background:var(--p)"></i>P</span><span><i style="background:var(--r)"></i>R</span><span>Jahre auf der Achse</span></div></div>
+    <p class="note">Auf den offenen Betrag fallen Zinsen an. Beim Verkauf von Gatow gibt es einen Sprung nach unten. Die Linie endet, wenn die 90.000 € getilgt sind.</p>
+  </details>
+
+  <details class="panel">
+    <summary><h2 id="t4">Vergleich der Zielzeiten, privat pro Monat</h2></summary>
+    <div class="scroll"><table id="cmp" class="stack"><thead><tr><th>Zielzeit</th><th>P privat</th><th>R privat</th><th>Zinsen für K gesamt</th></tr></thead><tbody><tr><td>10 Jahre</td><td data-label="P privat">750&nbsp;€</td><td data-label="R privat">750&nbsp;€</td><td data-label="Zinsen für K gesamt">20.629&nbsp;€</td></tr><tr><td>12 Jahre</td><td data-label="P privat">850&nbsp;€</td><td data-label="R privat">850&nbsp;€</td><td data-label="Zinsen für K gesamt">23.440&nbsp;€</td></tr><tr><td>15 Jahre</td><td data-label="P privat">950&nbsp;€</td><td data-label="R privat">950&nbsp;€</td><td data-label="Zinsen für K gesamt">27.608&nbsp;€</td></tr></tbody></table></div>
+    <p class="note">Höchste private Auszahlung, bei der die 90.000 € in der Zielzeit zurückgezahlt sind (gerundet auf 50 € pro Monat).</p>
+  </details>
+
+  <details class="panel">
+    <summary><h2 id="t5">Verlauf pro Jahr, Beträge pro Monat</h2></summary>
+    <div class="scroll"><table id="plan" class="stack"><thead><tr><th>Jahr</th><th>Schuld P offen</th><th>Schuld R offen</th><th>K gesamt</th><th>P privat</th><th>R privat</th><th>P an K</th><th>R an K</th></tr></thead><tbody><tr><td data-label="Jahr">1</td><td data-label="Schuld P offen">83.133&nbsp;€</td><td data-label="Schuld R offen">83.133&nbsp;€</td><td data-label="K gesamt">2.667&nbsp;€</td><td data-label="P privat">500&nbsp;€</td><td data-label="R privat">500&nbsp;€</td><td data-label="P an K">722&nbsp;€</td><td data-label="R an K">722&nbsp;€</td></tr><tr><td data-label="Jahr">2</td><td data-label="Schuld P offen">76.129&nbsp;€</td><td data-label="Schuld R offen">76.129&nbsp;€</td><td data-label="K gesamt">2.667&nbsp;€</td><td data-label="P privat">500&nbsp;€</td><td data-label="R privat">500&nbsp;€</td><td data-label="P an K">722&nbsp;€</td><td data-label="R an K">722&nbsp;€</td></tr><tr><td data-label="Jahr">3</td><td data-label="Schuld P offen">68.985&nbsp;€</td><td data-label="Schuld R offen">68.985&nbsp;€</td><td data-label="K gesamt">2.667&nbsp;€</td><td data-label="P privat">500&nbsp;€</td><td data-label="R privat">500&nbsp;€</td><td data-label="P an K">722&nbsp;€</td><td data-label="R an K">722&nbsp;€</td></tr><tr><td data-label="Jahr">4</td><td data-label="Schuld P offen">61.698&nbsp;€</td><td data-label="Schuld R offen">61.698&nbsp;€</td><td data-label="K gesamt">2.667&nbsp;€</td><td data-label="P privat">500&nbsp;€</td><td data-label="R privat">500&nbsp;€</td><td data-label="P an K">722&nbsp;€</td><td data-label="R an K">722&nbsp;€</td></tr><tr><td data-label="Jahr">5</td><td data-label="Schuld P offen">20.932&nbsp;€</td><td data-label="Schuld R offen">20.932&nbsp;€</td><td data-label="K gesamt">2.667&nbsp;€</td><td data-label="P privat">500&nbsp;€</td><td data-label="R privat">500&nbsp;€</td><td data-label="P an K">722&nbsp;€</td><td data-label="R an K">722&nbsp;€</td></tr><tr class="sale"><td colspan="8">Verkauf Gatow nach Jahr 5, Erlös 100.000&nbsp;€: K erhält 33.333&nbsp;€ (eigenes Drittel) plus 66.667&nbsp;€ Tilgung (P 33.333&nbsp;€, R 33.333&nbsp;€). Was P und R über ihre Schuld hinaus aus dem Erlös zusteht, bleibt privat.</td></tr><tr><td data-label="Jahr">6</td><td data-label="Schuld P offen">10.018&nbsp;€</td><td data-label="Schuld R offen">10.018&nbsp;€</td><td data-label="K gesamt">3.333&nbsp;€</td><td data-label="P privat">500&nbsp;€</td><td data-label="R privat">500&nbsp;€</td><td data-label="P an K">944&nbsp;€</td><td data-label="R an K">944&nbsp;€</td></tr><tr><td data-label="Jahr">7</td><td data-label="Schuld P offen">0&nbsp;€</td><td data-label="Schuld R offen">0&nbsp;€</td><td data-label="K gesamt">3.147&nbsp;€</td><td data-label="P privat">593&nbsp;€</td><td data-label="R privat">593&nbsp;€</td><td data-label="P an K">851&nbsp;€</td><td data-label="R an K">851&nbsp;€</td></tr></tbody><tfoot><tr><td>Summe gesamt</td><td></td><td></td><td data-label="K gesamt">337.769&nbsp;€</td><td data-label="P privat">43.115&nbsp;€</td><td data-label="R privat">43.115&nbsp;€</td><td data-label="P an K">98.218&nbsp;€</td><td data-label="R an K">98.218&nbsp;€</td></tr></tfoot></table></div>
+    <p class="note">Beträge pro Monat bzw. pro Jahr je nach Auswahl oben, im Jahresdurchschnitt. „Privat“ ist das, was sich P bzw. R aus dem Drittel auszahlt. „P an K“ und „R an K“ enthalten auch die Zusatzzahlungen. „K gesamt“ ist das Drittel von K plus die Zahlungen von P und R. Der Verkauf steht in einer eigenen Zeile, die Summe enthält ihn.</p>
+  </details>
+</div>
+
+<script>
+(function(){
+  var SHARE=90000;
+  // Alle laufenden Beträge werden intern pro Jahr gespeichert.
+  var S={rate:2,income:80000,reserve:10000,repair:10000,gato:8000,husum:8000,rpp:6000,rr:6000,xp:0,xr:0,
+         sale:100000,saleYear:5,saleOn:true};
+  var U="M",D=12;
+  var SPEC={
+    income:{Y:[20000,150000,1000],M:[1500,12500,100]},
+    reserve:{Y:[0,50000,1000],M:[0,4200,50]},
+    repair:{Y:[0,40000,1000],M:[0,3400,50]},
+    gato:{Y:[0,20000,100],M:[0,1700,10]},
+    husum:{Y:[0,20000,100],M:[0,1700,10]},
+    rpp:{Y:[0,24000,100],M:[0,2000,50]},
+    rr:{Y:[0,24000,100],M:[0,2000,50]},
+    xp:{Y:[0,36000,100],M:[0,3000,50]},
+    xr:{Y:[0,36000,100],M:[0,3000,50]}
+  };
+  var eur=new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0});
+  var $=function(id){return document.getElementById(id)};
+  function f(v){return eur.format(Math.round(v))}
+  function u(v){return f(v/D)}
+  function sfx(){return U==="M"?" pro Monat":" pro Jahr"}
+  function alt(v){return U==="M"?f(v)+" pro Jahr":f(v/12)+" pro Monat"}
+  function annualTail(){return ""}
+
+  function gatoAt(y){return (S.saleOn&&y>S.saleYear)?0:S.gato}
+  function poolAt(y){return S.income-S.reserve-S.repair-S.husum-gatoAt(y)}
+  function thirdAt(y){return poolAt(y)/3}
+
+  function sim(priv,extra,r){
+    var rows=[],bal=SHARE,intT=0,payT=0,extT=0,saleT=0,salePrivT=0,done=false,sale0=0;
+    var V3=S.saleOn?S.sale/3:0,saleDone=false;
+    if(S.saleOn&&S.saleYear===0){sale0=Math.min(V3,bal);bal-=sale0;saleT+=sale0;salePrivT+=V3-sale0;saleDone=true}
+    if(bal<0.5)done=true;
+    if(!done){
+      for(var y=1;y<=40;y++){
+        var th=thirdAt(y),base=Math.max(0,th-priv),avail=base+extra;
+        var it=bal*r,due=bal+it,pay=Math.min(avail,due);
+        var fromThird=Math.min(base,pay),ex=pay-fromThird,end=due-pay,sale=0;
+        if(S.saleOn&&!saleDone&&y===S.saleYear){sale=Math.min(V3,end);end-=sale;saleDone=true;saleT+=sale;salePrivT+=V3-sale}
+        rows.push({y:y,th:th,start:bal,interest:it,pay:pay,fromThird:fromThird,extra:ex,sale:sale,end:end});
+        intT+=it;payT+=pay;extT+=ex;bal=end;
+        if(end<0.5){done=true;break}
+      }
+    }
+    if(S.saleOn&&!saleDone)salePrivT+=V3;
+    return {rows:rows,n:rows.length,done:done,intT:intT,payT:payT,extT:extT,saleT:saleT,salePrivT:salePrivT,sale0:sale0,left:bal,V3:V3};
+  }
+  function row(s,y){return s.rows[y-1]}
+  function payAt(s,y){return s.rows[y-1]?s.rows[y-1].pay:0}
+  function ftAt(s,y){return s.rows[y-1]?s.rows[y-1].fromThird:0}
+  function saleAt(s,y){
+    if(!S.saleOn)return 0;
+    if(y===0)return s.sale0;
+    return s.rows[y-1]?s.rows[y-1].sale:0;
+  }
+  function privSum(s){var t=0;for(var y=1;y<=s.n;y++)t+=s.rows[y-1].th-s.rows[y-1].fromThird;return t+s.salePrivT}
+
+  // Schnellwahl: höchster privater Monatsbetrag (50-€-Schritte), mit dem die Schuld in n Jahren getilgt ist
+  function presetM(n,extra){
+    var r=S.rate/100,mx=Math.floor(Math.max(thirdAt(1),thirdAt(1000))/12/50)*50;
+    for(var v=mx;v>=0;v-=50){
+      var s=sim(v*12,extra,r);
+      if(s.done&&s.n<=n)return v;
+    }
+    return -1;
+  }
+
+  function chart(sp,sr,M){
+    if(!M){$("chart").innerHTML='<p class="note">Keine Zahlungen an K.</p>';return}
+    var W=640,H=230,L=56,B=26,T=10,R=10,max=SHARE*1.05,n=M;
+    function X(y){return L+(W-L-R)*y/n}
+    function Y(v){return T+(H-T-B)*(1-v/max)}
+    function line(s,color){
+      var pts=[{y:0,v:SHARE-s.sale0}];
+      for(var y=1;y<=n;y++){pts.push({y:y,v:s.rows[y-1]?s.rows[y-1].end:0})}
+      var d=pts.map(function(p,i){return (i?"L":"M")+X(p.y).toFixed(1)+" "+Y(Math.min(p.v,max)).toFixed(1)}).join(" ");
+      return '<path d="'+d+'" fill="none" stroke="'+color+'" stroke-width="2.5"/>';
+    }
+    var g="";
+    for(var i=0;i<=3;i++){
+      var v=SHARE*i/3,yy=Y(v);
+      g+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+yy+'" y2="'+yy+'" stroke="var(--line)"/>';
+      g+='<text x="'+(L-6)+'" y="'+(yy+4)+'" text-anchor="end" font-size="11" fill="var(--muted)">'+Math.round(v/1000)+' T€</text>';
+    }
+    var step=n>24?5:(n>12?2:1),xl="";
+    for(var y=0;y<=n;y+=step){
+      xl+='<text x="'+X(y)+'" y="'+(H-6)+'" text-anchor="middle" font-size="11" fill="var(--muted)">'+y+'</text>';
+    }
+    $("chart").innerHTML='<svg class="chart" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Offene Schuld von P und R an K">'+g+xl+
+      line(sr,"var(--r)")+line(sp,"var(--p)")+'</svg>'+
+      '<div class="legend"><span><i style="background:var(--p)"></i>P</span><span><i style="background:var(--r)"></i>R</span><span>Jahre auf der Achse</span></div>';
+  }
+
+  function personPR(o){
+    var s=o.s,r1=row(s,1),th=thirdAt(1),priv=o.priv;
+    var ft=r1?r1.fromThird:0,ex=r1?r1.extra:0,pay=r1?r1.pay:0;
+    var pr=th>0?Math.max(0,Math.min(100,(th-ft)/th*100)):0;
+    var thAfter=thirdAt(s.n+1);
+    var facts='<div><span>Zahlung an K endet nach</span><b>'+(s.done?s.n+' Jahren':'nie')+'</b></div>'+
+      '<div><span>Privat bis dahin gesamt</span><b>'+f(privSum(s))+'</b></div>'+
+      '<div><span>Zahlung an K gesamt, inkl. Zinsen</span><b>'+f(s.payT+s.saleT)+'</b></div>'+
+      '<div><span>Davon aus eigener Tasche</span><b>'+f(s.extT)+'</b></div>'+
+      (S.saleOn?'<div><span>Davon durch den Verkauf Gatow getilgt</span><b>'+f(s.saleT)+'</b></div>':'')+
+      '<div><span>Davon Zinsen</span><b>'+f(s.intT)+'</b></div>'+
+      '<div><span>Davon Rückzahlung der 90.000 €</span><b>'+f(Math.max(0,s.payT+s.saleT-s.intT))+'</b></div>';
+    return '<div class="person" style="--c:'+o.c+'"><header><h3>'+o.name+'</h3><span class="tag">schuldet K 90.000 € plus Zinsen</span></header>'+
+      '<div class="hero">'+u(th-ft)+' <small>privat'+sfx()+'</small></div>'+
+      '<div class="heroSub">'+alt(th-ft)+', Zahlung an K '+u(pay)+sfx()+'</div>'+
+      '<div class="split"><div style="width:'+pr+'%;background:'+o.c+'"></div><div style="width:'+(100-pr)+'%;background:'+o.c2+'"></div></div>'+
+      '<div class="splitlab"><span>privat</span><span>Zahlung an K aus dem Drittel</span></div>'+
+      '<table><thead><tr><th></th><th>pro Monat</th><th>pro Jahr</th></tr></thead><tbody>'+
+      '<tr><td>Drittelanteil</td><td>'+f(th/12)+'</td><td>'+f(th)+'</td></tr>'+
+      '<tr><td>Privat</td><td>'+f((th-ft)/12)+'</td><td>'+f(th-ft)+'</td></tr>'+
+      '<tr><td>Aus dem Drittel an K</td><td>'+f(ft/12)+'</td><td>'+f(ft)+'</td></tr>'+
+      '<tr><td>Zusätzlich an K</td><td>'+f(ex/12)+'</td><td>'+f(ex)+'</td></tr>'+
+      '<tr class="sum"><td>Zahlung an K gesamt</td><td>'+f(pay/12)+'</td><td>'+f(pay)+'</td></tr></tbody></table>'+
+      '<p class="after">'+(s.done?'Danach ist das ganze Drittel privat: <b>'+f(thAfter/12)+' pro Monat</b> ('+f(thAfter)+' pro Jahr).':'Die 90.000 € werden so nicht zurückgezahlt.')+'</p>'+
+      '<div class="facts">'+facts+'</div></div>';
+  }
+
+  function personK(sp,sr,M){
+    var th=thirdAt(1),zp=payAt(sp,1),zr=payAt(sr,1),tot=th+zp+zr;
+    var pr=tot>0?th/tot*100:100;
+    var payPR=sp.payT+sr.payT,intPR=sp.intT+sr.intT,salePR=sp.saleT+sr.saleT;
+    var thSum=0;for(var y=1;y<=M;y++)thSum+=thirdAt(y);
+    var V3=S.saleOn?S.sale/3:0;
+    var thAfter=thirdAt(M+1);
+    var after=(sp.done&&sr.done)?'Die Zahlung von P endet nach <b>'+sp.n+' Jahren</b>, die von R nach <b>'+sr.n+' Jahren</b>. Danach bleibt K ihr Drittel: <b>'+f(thAfter/12)+' pro Monat</b> ('+f(thAfter)+' pro Jahr).':'Mindestens eine Rückzahlung wird so nicht abgeschlossen.';
+    var facts='<div><span>Eigenes Drittel gesamt bis Jahr '+M+'</span><b>'+f(thSum)+'</b></div>'+
+      '<div><span>Zahlungen von P und R gesamt</span><b>'+f(payPR)+'</b></div>'+
+      '<div><span>Davon Zinsen</span><b>'+f(intPR)+'</b></div>'+
+      (S.saleOn?'<div><span>Verkauf Gatow, eigenes Drittel</span><b>'+f(V3)+'</b></div><div><span>Verkauf Gatow, Tilgung von P und R</span><b>'+f(salePR)+'</b></div>':'')+
+      '<div><span>Summe gesamt bis Jahr '+M+'</span><b>'+f(thSum+payPR+V3+salePR)+'</b></div>';
+    return '<div class="person" style="--c:var(--k)"><header><h3>K</h3><span class="tag">hat 270.000 € vorgestreckt</span></header>'+
+      '<div class="hero">'+u(tot)+' <small>gesamt'+sfx()+'</small></div>'+
+      '<div class="heroSub">'+alt(tot)+', solange P und R zahlen</div>'+
+      '<div class="split"><div style="width:'+pr+'%;background:var(--k)"></div><div style="width:'+(100-pr)+'%;background:var(--kk)"></div></div>'+
+      '<div class="splitlab"><span>eigenes Drittel</span><span>Zahlung von P und R</span></div>'+
+      '<table><thead><tr><th></th><th>pro Monat</th><th>pro Jahr</th></tr></thead><tbody>'+
+      '<tr><td>Eigenes Drittel</td><td>'+f(th/12)+'</td><td>'+f(th)+'</td></tr>'+
+      '<tr><td>Zahlung von P</td><td>'+f(zp/12)+'</td><td>'+f(zp)+'</td></tr>'+
+      '<tr><td>Zahlung von R</td><td>'+f(zr/12)+'</td><td>'+f(zr)+'</td></tr>'+
+      '<tr class="sum"><td>Summe</td><td>'+f(tot/12)+'</td><td>'+f(tot)+'</td></tr></tbody></table>'+
+      '<p class="after">'+after+'</p>'+
+      '<div class="facts">'+facts+'</div></div>';
+  }
+
+  function applySliders(){
+    Object.keys(SPEC).forEach(function(k){
+      var sp=SPEC[k][U],el=$(k);
+      el.min=sp[0];el.max=sp[1];el.step=sp[2];
+      el.value=Math.round(S[k]/D/sp[2])*sp[2];
+    });
+    $("rate").value=S.rate;
+    $("sale").value=S.sale;$("saleYear").value=S.saleYear;$("saleOn").checked=S.saleOn;
+    $("sale").disabled=!S.saleOn;$("saleYear").disabled=!S.saleOn;
+  }
+
+  function render(){
+    D=U==="M"?12:1;
+    $("uM").setAttribute("aria-pressed",U==="M");
+    $("uY").setAttribute("aria-pressed",U==="Y");
+    applySliders();
+
+    $("t1").textContent="Mieteinnahmen und Abzüge"+sfx();
+    $("t2").textContent="Was sich P und R privat auszahlen"+sfx();
+    $("t2b").textContent="Zusätzliche Zahlung an K aus eigener Tasche"+sfx();
+    $("t3").textContent="Verwendung der Mieteinnahmen im 1. Jahr"+sfx();
+    $("t4").textContent="Vergleich der Zielzeiten, privat"+sfx();
+    $("t5").textContent="Verlauf pro Jahr, Beträge"+sfx();
+
+    ["income","reserve","repair","gato","husum","rpp","rr","xp","xr"].forEach(function(key){
+      $("o_"+key).textContent=u(S[key])+" ("+alt(S[key])+")";
+    });
+    $("o_rate").textContent=S.rate.toFixed(1).replace(".",",")+" %";
+    $("o_sale").textContent=f(S.sale);
+    $("o_saleYear").textContent=S.saleYear===0?"0 Jahren (sofort)":S.saleYear+" Jahren";
+    $("saleNote").textContent=S.saleOn?"Der Erlös wird gedrittelt: "+f(S.sale/3)+" je Person. Die Drittel von P und R tilgen ihre Schuld an K, K behält ihres. Die Grundkosten von Gatow ("+f(S.gato)+" pro Jahr) fallen ab dem Verkauf weg.":"Ohne Verkauf bleiben die Grundkosten von Gatow dauerhaft bestehen.";
+
+    var P1=poolAt(1),th=thirdAt(1);
+    var pb='<b>'+u(P1)+'</b><span>Pool im 1. Jahr'+sfx()+' nach allen Abzügen</span><span>Drittelanteil je Person: '+u(th)+'</span>';
+    if(S.saleOn&&S.saleYear>=1&&S.gato>0)pb+='<span>Nach dem Verkauf: Pool '+u(poolAt(S.saleYear+1))+', Drittel '+u(thirdAt(S.saleYear+1))+'</span>';
+    $("poolbar").innerHTML=pb;
+
+    var r=S.rate/100;
+    var sp=sim(S.rpp,S.xp,r),sr=sim(S.rr,S.xr,r);
+    function hint(s,id){
+      var r1=row(s,1),pay=r1?r1.pay:0,ex=r1?r1.extra:0;
+      $(id).textContent="Zahlung an K im 1. Jahr: "+u(pay)+sfx()+(ex>0?" (davon "+u(ex)+" zusätzlich)":"")+(s.done?", fertig nach "+s.n+" Jahren":"");
+    }
+    hint(sp,"h_rpp");hint(sr,"h_rr");
+
+    // Schnellwahl
+    var defs=[["P","rpp",S.xp],["R","rr",S.xr]],pre={},hc="";
+    defs.forEach(function(d){
+      pre[d[1]]={};
+      hc+='<div class="chips"><span class="who">'+d[0]+', zurückgezahlt in</span>';
+      [10,12,15].forEach(function(n){
+        var v=presetM(n,d[2]);pre[d[1]][n]=v;
+        hc+='<button class="chip" type="button" data-w="'+d[1]+'" data-n="'+n+'"'+(v>=0?'':' disabled')+' aria-pressed="'+(v>=0&&S[d[1]]===v*12)+'">'+n+' Jahre'+(v>=0?' ('+u(v*12)+')':'')+'</button>';
+      });
+      hc+='</div>';
+    });
+    $("chips").innerHTML=hc;
+    Array.prototype.forEach.call(document.querySelectorAll("#chips .chip"),function(b){
+      b.onclick=function(){
+        var v=pre[b.getAttribute("data-w")][parseInt(b.getAttribute("data-n"),10)];
+        if(v>=0){S[b.getAttribute("data-w")]=v*12;render()}
+      };
+    });
+
+    // Verwendung 1. Jahr
+    var r1p=row(sp,1),r1r=row(sr,1);
+    var ftP=r1p?r1p.fromThird:0,ftR=r1r?r1r.fromThird:0;
+    var segs=[
+      ["Rücklagen",S.reserve,"var(--res)"],["Reparaturen",S.repair,"var(--rep)"],
+      ["Wohnung Gatow",gatoAt(1),"var(--wg)"],["Wohnung Husum",S.husum,"var(--wh)"],
+      ["K, eigenes Drittel",th,"var(--k)"],
+      ["P privat",th-ftP,"var(--p)"],["P Zahlung an K",ftP,"var(--pp)"],
+      ["R privat",th-ftR,"var(--r)"],["R Zahlung an K",ftR,"var(--rr)"]
+    ];
+    var sum=segs.reduce(function(a,s){return a+Math.max(0,s[1])},0),total=Math.max(S.income,sum)||1;
+    $("bar").innerHTML=segs.map(function(s){return '<div title="'+s[0]+': '+u(s[1])+'" style="width:'+(Math.max(0,s[1])/total*100)+'%;background:'+s[2]+'"></div>'}).join("");
+    $("uselist").innerHTML=segs.filter(function(s){return s[1]>0}).map(function(s){
+      return '<div class="use"><span><i style="background:'+s[2]+'"></i>'+s[0]+'</span><b>'+u(s[1])+'</b></div>';
+    }).join("")+'<div class="use"><span><b>Mieteinnahmen</b></span><b>'+u(S.income)+'</b></div>';
+
+    // Hinweise
+    var w="";
+    function chk(name,s){
+      if(s.done)return;
+      if(s.n===0||s.rows[0].pay<=0)w+='<p class="warn">'+name+': Es fließt nichts an K, die private Auszahlung ist so hoch wie das ganze Drittel oder höher.</p>';
+      else w+='<p class="warn">'+name+': Nach 40 Jahren sind noch '+f(s.left)+' offen. Die Zahlung an K ist kleiner als die Zinsen oder zu klein für 40 Jahre.</p>';
+    }
+    chk("P",sp);chk("R",sr);
+    if(sp.done&&sr.done)w+='<p class="ok">Zahlung an K endet nach: P '+sp.n+' Jahren, R '+sr.n+' Jahren.</p>';
+    $("warn").innerHTML=w;
+
+    var M=Math.max(sp.n,sr.n,S.saleOn?S.saleYear:0);
+    $("persons").innerHTML=
+      personK(sp,sr,M)+
+      personPR({name:"P",c:"var(--p)",c2:"var(--pp)",priv:S.rpp,s:sp})+
+      personPR({name:"R",c:"var(--r)",c2:"var(--rr)",priv:S.rr,s:sr});
+
+    chart(sp,sr,M);
+
+    // Vergleich
+    var h='<thead><tr><th>Zielzeit</th><th>P privat</th><th>R privat</th><th>Zinsen für K gesamt</th></tr></thead><tbody>';
+    [10,12,15].forEach(function(n){
+      var a=pre.rpp[n],b=pre.rr[n],zin="–";
+      if(a>=0&&b>=0)zin=f(sim(a*12,S.xp,r).intT+sim(b*12,S.xr,r).intT);
+      h+='<tr><td>'+n+' Jahre</td><td data-label="P privat">'+(a>=0?u(a*12):"nicht möglich")+'</td><td data-label="R privat">'+(b>=0?u(b*12):"nicht möglich")+'</td><td data-label="Zinsen für K gesamt">'+zin+'</td></tr>';
+    });
+    $("cmp").innerHTML=h+'</tbody>';
+
+    // Verlauf
+    if(!M){$("plan").innerHTML="";return}
+    var V3=S.saleOn?S.sale/3:0;
+    function open(s,y){return s.rows[y-1]?s.rows[y-1].end:(y>s.n&&s.n>0?0:SHARE-s.sale0)}
+    function saleRow(y){
+      var sP=saleAt(sp,y),sR=saleAt(sr,y);
+      return '<tr class="sale"><td colspan="8">Verkauf Gatow '+(y===0?'zu Beginn':'nach Jahr '+y)+', Erlös '+f(S.sale)+': K erhält '+f(V3)+' (eigenes Drittel) plus '+f(sP+sR)+' Tilgung (P '+f(sP)+', R '+f(sR)+'). Was P und R über ihre Schuld hinaus aus dem Erlös zusteht, bleibt privat.</td></tr>';
+    }
+    var t='<thead><tr><th>Jahr</th><th>Schuld P offen</th><th>Schuld R offen</th><th>K gesamt</th><th>P privat</th><th>R privat</th><th>P an K</th><th>R an K</th></tr></thead><tbody>';
+    var tk=0,tp=0,tr=0,tzp=0,tzr=0;
+    if(S.saleOn&&S.saleYear===0)t+=saleRow(0);
+    for(var y=1;y<=M;y++){
+      var thy=thirdAt(y),zp=payAt(sp,y),zr=payAt(sr,y),pp=thy-ftAt(sp,y),prr=thy-ftAt(sr,y),kk=thy+zp+zr;
+      tk+=kk;tp+=pp;tr+=prr;tzp+=zp;tzr+=zr;
+      t+='<tr><td data-label="Jahr">'+y+'</td><td data-label="Schuld P offen">'+f(open(sp,y))+'</td><td data-label="Schuld R offen">'+f(open(sr,y))+'</td><td data-label="K gesamt">'+u(kk)+'</td><td data-label="P privat">'+u(pp)+'</td><td data-label="R privat">'+u(prr)+'</td><td data-label="P an K">'+u(zp)+'</td><td data-label="R an K">'+u(zr)+'</td></tr>';
+      if(S.saleOn&&S.saleYear===y)t+=saleRow(y);
+    }
+    if(S.saleOn){tk+=V3+sp.saleT+sr.saleT;tp+=sp.salePrivT;tr+=sr.salePrivT;tzp+=sp.saleT;tzr+=sr.saleT}
+    t+='</tbody><tfoot><tr><td>Summe gesamt</td><td></td><td></td><td data-label="K gesamt">'+f(tk)+'</td><td data-label="P privat">'+f(tp)+'</td><td data-label="R privat">'+f(tr)+'</td><td data-label="P an K">'+f(tzp)+'</td><td data-label="R an K">'+f(tzr)+'</td></tr></tfoot>';
+    $("plan").innerHTML=t;
+  }
+
+  Object.keys(SPEC).forEach(function(key){
+    $(key).addEventListener("input",function(){S[key]=parseFloat($(key).value)*D;render()});
+  });
+  $("rate").addEventListener("input",function(){S.rate=parseFloat($("rate").value);render()});
+  $("sale").addEventListener("input",function(){S.sale=parseFloat($("sale").value);render()});
+  $("saleYear").addEventListener("input",function(){S.saleYear=parseInt($("saleYear").value,10);render()});
+  $("saleOn").addEventListener("change",function(){S.saleOn=$("saleOn").checked;render()});
+  $("uM").onclick=function(){U="M";render()};
+  $("uY").onclick=function(){U="Y";render()};
+  render();
+})();
+</script>
+
+
+</body></html>
