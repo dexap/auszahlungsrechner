@@ -59,7 +59,7 @@ h3{font-size:1.1rem;margin:0}
 .sliders{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px 28px}
 .sl label{display:flex;justify-content:space-between;gap:4px 8px;font-size:.92rem;margin-bottom:2px;flex-wrap:wrap}
 .sl output{font-weight:600;font-variant-numeric:tabular-nums}
-.sl .val{display:inline-flex;align-items:baseline;white-space:pre-wrap}
+.sl .val{display:flex;flex:0 0 100%;align-items:baseline;white-space:nowrap}
 .sl input.num{width:6.5em;text-align:right;font:inherit;font-weight:600;font-variant-numeric:tabular-nums;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:2px 6px}
 .sl input.num:disabled{opacity:.45}
 .sl .hint{color:var(--muted);font-size:.82rem;margin-top:2px}
@@ -234,7 +234,7 @@ details.panel>summary:focus-visible{outline:3px solid var(--k);outline-offset:4p
   function f(v){return eur.format(Math.round(v))}
   function u(v){return f(v/D)}
   function sfx(){return U==="M"?" pro Monat":" pro Jahr"}
-  function alt(v){return U==="M"?f(v)+" pro Jahr":f(v/12)+" pro Monat"}
+  function alt(v){return U==="M"?f(v)+" p.a.":f(v/12)+" pro Monat"}
   function annualTail(){return ""}
 
   function gatoAt(y){return (S.saleOn&&y>S.saleYear)?0:S.gato}
