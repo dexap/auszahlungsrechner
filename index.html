@@ -170,8 +170,8 @@ details.panel>summary:focus-visible{outline:3px solid var(--k);outline-offset:4p
   <div class="panel">
     <h2 id="t2">Was sich P und R privat auszahlen pro Monat</h2>
     <div class="sliders">
-      <div class="sl p"><label for="rpp">P, privat <output id="o_rpp">500&nbsp;€ (6.000&nbsp;€ pro Jahr)</output></label><input type="range" id="rpp" min="0" max="2000" step="50" value="500"><div class="hint" id="h_rpp">Zahlung an K im 1. Jahr: 722&nbsp;€ pro Monat, fertig nach 7 Jahren</div></div>
-      <div class="sl r"><label for="rr">R, privat <output id="o_rr">500&nbsp;€ (6.000&nbsp;€ pro Jahr)</output></label><input type="range" id="rr" min="0" max="2000" step="50" value="500"><div class="hint" id="h_rr">Zahlung an K im 1. Jahr: 722&nbsp;€ pro Monat, fertig nach 7 Jahren</div></div>
+      <div class="sl p"><label for="rpp">P, privat <output id="o_rpp">500&nbsp;€ (6.000&nbsp;€ pro Jahr)</output></label><input type="range" id="rpp" min="0" max="2000" step="50" value="500"><div class="hint" id="h_rpp">Zahlung an K im 1. Jahr: 722&nbsp;€ pro Monat</div></div>
+      <div class="sl r"><label for="rr">R, privat <output id="o_rr">500&nbsp;€ (6.000&nbsp;€ pro Jahr)</output></label><input type="range" id="rr" min="0" max="2000" step="50" value="500"><div class="hint" id="h_rr">Zahlung an K im 1. Jahr: 722&nbsp;€ pro Monat</div></div>
     </div>
     <div class="group" id="t2b">Zusätzliche Zahlung an K aus eigener Tasche pro Monat</div>
     <div class="sliders">
@@ -342,7 +342,7 @@ details.panel>summary:focus-visible{outline:3px solid var(--k);outline-offset:4p
     var thSum=0;for(var y=1;y<=M;y++)thSum+=thirdAt(y);
     var V3=S.saleOn?S.sale/3:0;
     var thAfter=thirdAt(M+1);
-    var after=(sp.done&&sr.done)?'Die Zahlung von P endet nach <b>'+sp.n+' Jahren</b>, die von R nach <b>'+sr.n+' Jahren</b>. Danach bleibt K ihr Drittel: <b>'+f(thAfter/12)+' pro Monat</b> ('+f(thAfter)+' pro Jahr).':'Mindestens eine Rückzahlung wird so nicht abgeschlossen.';
+    var after=(sp.done&&sr.done)?'Nach der Rückzahlung von P und R bleibt K ihr Drittel: <b>'+f(thAfter/12)+' pro Monat</b> ('+f(thAfter)+' pro Jahr).':'Mindestens eine Rückzahlung wird so nicht abgeschlossen.';
     var facts='<div><span>Eigenes Drittel gesamt bis Jahr '+M+'</span><b>'+f(thSum)+'</b></div>'+
       '<div><span>Zahlungen von P und R gesamt</span><b>'+f(payPR)+'</b></div>'+
       '<div><span>Davon Zinsen</span><b>'+f(intPR)+'</b></div>'+
@@ -408,7 +408,7 @@ details.panel>summary:focus-visible{outline:3px solid var(--k);outline-offset:4p
     var sp=sim(S.rpp,S.xp,r),sr=sim(S.rr,S.xr,r);
     function hint(s,id){
       var r1=row(s,1),pay=r1?r1.pay:0,ex=r1?r1.extra:0;
-      $(id).textContent="Zahlung an K im 1. Jahr: "+u(pay)+sfx()+(ex>0?" (davon "+u(ex)+" zusätzlich)":"")+(s.done?", fertig nach "+s.n+" Jahren":"");
+      $(id).textContent="Zahlung an K im 1. Jahr: "+u(pay)+sfx()+(ex>0?" (davon "+u(ex)+" zusätzlich)":"")+"";
     }
     hint(sp,"h_rpp");hint(sr,"h_rr");
 
@@ -455,7 +455,6 @@ details.panel>summary:focus-visible{outline:3px solid var(--k);outline-offset:4p
       else w+='<p class="warn">'+name+': Nach 40 Jahren sind noch '+f(s.left)+' offen. Die Zahlung an K ist kleiner als die Zinsen oder zu klein für 40 Jahre.</p>';
     }
     chk("P",sp);chk("R",sr);
-    if(sp.done&&sr.done)w+='<p class="ok">Zahlung an K endet nach: P '+sp.n+' Jahren, R '+sr.n+' Jahren.</p>';
     $("warn").innerHTML=w;
 
     var M=Math.max(sp.n,sr.n,S.saleOn?S.saleYear:0);
