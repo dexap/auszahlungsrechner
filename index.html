@@ -319,23 +319,23 @@ details.panel>summary:focus-visible{outline:3px solid var(--k);outline-offset:4p
     var pr=th>0?Math.max(0,Math.min(100,(th-ft)/th*100)):0;
     var thAfter=thirdAt(s.n+1);
     var facts='<div><span>Zahlung an K endet nach</span><b>'+(s.done?s.n+' Jahren':'nie')+'</b></div>'+
-      '<div><span>Privat bis dahin gesamt</span><b>'+f(privSum(s))+'</b></div>'+
       '<div><span>Zahlung an K gesamt, inkl. Zinsen</span><b>'+f(s.payT+s.saleT)+'</b></div>'+
       '<div><span>Davon aus eigener Tasche</span><b>'+f(s.extT)+'</b></div>'+
       (S.saleOn?'<div><span>Davon durch den Verkauf Gatow getilgt</span><b>'+f(s.saleT)+'</b></div>':'')+
       '<div><span>Davon Zinsen</span><b>'+f(s.intT)+'</b></div>'+
-      '<div><span>Davon Rückzahlung der 90.000 €</span><b>'+f(Math.max(0,s.payT+s.saleT-s.intT))+'</b></div>';
+      '<div><span>Davon Rückzahlung der 90.000 €</span><b>'+f(Math.max(0,s.payT+s.saleT-s.intT))+'</b></div>'+
+      '<div><span>Privat bis dahin gesamt</span><b>'+f(privSum(s))+'</b></div>';
     return '<div class="person" style="--c:'+o.c+'"><header><h3>'+o.name+'</h3><span class="tag">schuldet K 90.000 € plus Zinsen</span></header>'+
-      '<div class="hero">'+u(th-ft)+' <small>privat'+sfx()+'</small></div>'+
-      '<div class="heroSub">'+alt(th-ft)+', Zahlung an K '+u(pay)+sfx()+'</div>'+
-      '<div class="split"><div style="width:'+pr+'%;background:'+o.c+'"></div><div style="width:'+(100-pr)+'%;background:'+o.c2+'"></div></div>'+
-      '<div class="splitlab"><span>privat</span><span>Zahlung an K aus dem Drittel</span></div>'+
+      '<div class="hero">'+u(pay)+' <small>an K'+sfx()+'</small></div>'+
+      '<div class="heroSub">'+alt(pay)+', privat bleiben '+u(th-ft)+sfx()+'</div>'+
+      '<div class="split"><div style="width:'+(100-pr)+'%;background:'+o.c2+'"></div><div style="width:'+pr+'%;background:'+o.c+'"></div></div>'+
+      '<div class="splitlab"><span>Zahlung an K aus dem Drittel</span><span>privat</span></div>'+
       '<table><thead><tr><th></th><th>pro Monat</th><th>pro Jahr</th></tr></thead><tbody>'+
-      '<tr><td>Drittelanteil</td><td>'+f(th/12)+'</td><td>'+f(th)+'</td></tr>'+
-      '<tr><td>Privat</td><td>'+f((th-ft)/12)+'</td><td>'+f(th-ft)+'</td></tr>'+
       '<tr><td>Aus dem Drittel an K</td><td>'+f(ft/12)+'</td><td>'+f(ft)+'</td></tr>'+
       '<tr><td>Zusätzlich an K</td><td>'+f(ex/12)+'</td><td>'+f(ex)+'</td></tr>'+
-      '<tr class="sum"><td>Zahlung an K gesamt</td><td>'+f(pay/12)+'</td><td>'+f(pay)+'</td></tr></tbody></table>'+
+      '<tr class="sum"><td>Zahlung an K gesamt</td><td>'+f(pay/12)+'</td><td>'+f(pay)+'</td></tr>'+
+      '<tr><td>Drittelanteil</td><td>'+f(th/12)+'</td><td>'+f(th)+'</td></tr>'+
+      '<tr><td>Privat</td><td>'+f((th-ft)/12)+'</td><td>'+f(th-ft)+'</td></tr></tbody></table>'+
       '<p class="after">'+(s.done?'Danach ist das ganze Drittel privat: <b>'+f(thAfter/12)+' pro Monat</b> ('+f(thAfter)+' pro Jahr).':'Die 90.000 € werden so nicht zurückgezahlt.')+'</p>'+
       '<div class="facts">'+facts+'</div></div>';
   }
