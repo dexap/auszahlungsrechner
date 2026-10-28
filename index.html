@@ -18,7 +18,7 @@
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     --bg:#141917; --surface:#1d2420; --ink:#e8ede9; --muted:#98a39d; --line:#2f3833;
-    --k:#d9788f; --kk:#7d3547; --p:#e0a64a; --pp:#8f6a2a; --r:#b394e0; --rr:#5d467f;
+    --k:#d9788f; --kk:#7d3547; --p:#8f6a2a; --pp:#e0a64a; --r:#5d467f; --rr:#b394e0;
     --res:#7e8a97; --rep:#5a6672; --wg:#6f8a76; --wh:#8f8078; --free:#2c3631;
     --warn:#ff8a80; --inc:#6dbb8b; --exp:#ff5a4d; --blue:#6f9fe0;
     --chip:#27302b; --chip-on:#e8ede9; --chip-on-ink:#141917;
@@ -27,7 +27,7 @@
 }
 :root[data-theme="dark"]{
   --bg:#141917; --surface:#1d2420; --ink:#e8ede9; --muted:#98a39d; --line:#2f3833;
-  --k:#d9788f; --kk:#7d3547; --p:#e0a64a; --pp:#8f6a2a; --r:#b394e0; --rr:#5d467f;
+  --k:#d9788f; --kk:#7d3547; --p:#8f6a2a; --pp:#e0a64a; --r:#5d467f; --rr:#b394e0;
   --res:#7e8a97; --rep:#5a6672; --wg:#6f8a76; --wh:#8f8078; --free:#2c3631;
   --warn:#ff8a80; --inc:#6dbb8b; --exp:#ff5a4d; --blue:#6f9fe0;
   --chip:#27302b; --chip-on:#e8ede9; --chip-on-ink:#141917;
@@ -93,7 +93,7 @@ input[type=range]:disabled{opacity:.45}
 .hero small{font-size:.9rem;font-weight:400;color:var(--muted);letter-spacing:0}
 .heroSub{color:var(--muted);font-size:.9rem;margin-bottom:12px}
 .split{display:flex;height:12px;border-radius:6px;overflow:hidden;margin:0 0 4px;background:var(--free)}
-.splitlab{display:flex;justify-content:space-between;font-size:.8rem;color:var(--muted);margin-bottom:12px}
+.splitlab{display:flex;flex-wrap:wrap;gap:2px 10px;justify-content:space-between;font-size:.8rem;color:var(--muted);margin-bottom:12px}
 .person table{font-size:.88rem;table-layout:auto}
 .person th{font-size:.74rem;padding:6px 6px;white-space:normal}
 .person td{padding:7px 6px}
@@ -356,8 +356,8 @@ details.panel>summary:focus-visible{outline:3px solid var(--k);outline-offset:4p
     return '<div class="person" style="--c:var(--k)"><header><h3>K</h3><span class="tag">hat 270.000 € vorgestreckt</span></header>'+
       '<div class="hero">'+u(tot)+' <small>gesamt'+sfx()+'</small></div>'+
       '<div class="heroSub">'+alt(tot)+', solange P und R zahlen</div>'+
-      '<div class="split"><div style="width:'+pr+'%;background:var(--k)"></div><div style="width:'+(100-pr)+'%;background:var(--kk)"></div></div>'+
-      '<div class="splitlab"><span>eigenes Drittel</span><span>Zahlung von P und R</span></div>'+
+      '<div class="split"><div style="width:'+(tot>0?th/tot*100:100)+'%;background:var(--k)"></div><div style="width:'+(tot>0?zp/tot*100:0)+'%;background:var(--pp)"></div><div style="width:'+(tot>0?zr/tot*100:0)+'%;background:var(--rr)"></div></div>'+
+      '<div class="splitlab"><span>eigenes Drittel</span><span>Zahlung von P</span><span>Zahlung von R</span></div>'+
       '<table><thead><tr><th></th><th>pro Monat</th><th>pro Jahr</th></tr></thead><tbody>'+
       '<tr><td>Eigenes Drittel</td><td>'+f(th/12)+'</td><td>'+f(th)+'</td></tr>'+
       '<tr><td>Zahlung von P</td><td>'+f(zp/12)+'</td><td>'+f(zp)+'</td></tr>'+
