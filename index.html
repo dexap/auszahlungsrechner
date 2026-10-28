@@ -59,6 +59,9 @@ h3{font-size:1.1rem;margin:0}
 .sliders{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px 28px}
 .sl label{display:flex;justify-content:space-between;gap:4px 8px;font-size:.92rem;margin-bottom:2px;flex-wrap:wrap}
 .sl output{font-weight:600;font-variant-numeric:tabular-nums}
+.sl .val{display:inline-flex;align-items:baseline;white-space:pre-wrap}
+.sl input.num{width:6.5em;text-align:right;font:inherit;font-weight:600;font-variant-numeric:tabular-nums;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:2px 6px}
+.sl input.num:disabled{opacity:.45}
 .sl .hint{color:var(--muted);font-size:.82rem;margin-top:2px}
 input[type=range]{width:100%;accent-color:var(--k);height:32px;margin:0}
 input[type=range]:disabled{opacity:.45}
@@ -381,12 +384,17 @@ details.panel>summary:focus-visible{outline:3px solid var(--k);outline-offset:4p
     $("t4").textContent="Vergleich der Zielzeiten, privat"+sfx();
     $("t5").textContent="Verlauf pro Jahr, Beträge"+sfx();
 
-    ["income","reserve","repair","gato","husum","rpp","rr","xp","xr"].forEach(function(key){
-      $("o_"+key).textContent=u(S[key])+" ("+alt(S[key])+")";
+    Object.keys(SPEC).forEach(function(key){
+      setNum(key,Math.round(S[key]/D));
+      $("o_"+key).innerHTML="&nbsp;€ ("+alt(S[key])+")";
     });
-    $("o_rate").textContent=S.rate.toFixed(1).replace(".",",")+" %";
-    $("o_sale").textContent=f(S.sale);
-    $("o_saleYear").textContent=S.saleYear===0?"0 Jahren (sofort)":S.saleYear+" Jahren";
+    setNum("rate",S.rate.toFixed(1).replace(".",","));
+    $("o_rate").innerHTML="&nbsp;%";
+    setNum("sale",Math.round(S.sale));
+    $("o_sale").innerHTML="&nbsp;€";
+    setNum("saleYear",S.saleYear);
+    NUM.sale.disabled=!S.saleOn;NUM.saleYear.disabled=!S.saleOn;
+    $("o_saleYear").textContent=S.saleYear===0?" Jahren (sofort)":" Jahren";
     $("saleNote").textContent=S.saleOn?"Der Erlös wird gedrittelt: "+f(S.sale/3)+" je Person. Die Drittel von P und R tilgen ihre Schuld an K, K behält ihres. Die Grundkosten von Gatow ("+f(S.gato)+" pro Jahr) fallen ab dem Verkauf weg.":"Ohne Verkauf bleiben die Grundkosten von Gatow dauerhaft bestehen.";
 
     var P1=poolAt(1),th=thirdAt(1);
@@ -487,9 +495,40 @@ details.panel>summary:focus-visible{outline:3px solid var(--k);outline-offset:4p
     $("plan").innerHTML=t;
   }
 
+  // Manuell bearbeitbare Zahlenfelder neben den Schiebereglern
+  var NUM={};
+  function setNum(key,v){NUM[key].value=typeof v==="number"?new Intl.NumberFormat("de-DE").format(v):v}
+  function parseNum(t){
+    t=String(t).replace(/[€%\s\u00a0]/g,"");
+    if(t.indexOf(",")>-1)t=t.replace(/\./g,"").replace(",",".");
+    else if(/^\d{1,3}(\.\d{3})+$/.test(t))t=t.replace(/\./g,"");
+    var n=parseFloat(t);
+    return isFinite(n)?n:NaN;
+  }
+  function makeNum(key,apply){
+    var out=$("o_"+key),lab=out.parentNode,inp=document.createElement("input"),wrap=document.createElement("span");
+    inp.type="text";inp.className="num";inp.id="n_"+key;
+    inp.inputMode=key==="rate"?"decimal":"numeric";
+    inp.setAttribute("aria-label",lab.firstChild.textContent.trim()||key);
+    inp.addEventListener("focus",function(){inp.select()});
+    inp.addEventListener("keydown",function(e){if(e.key==="Enter")inp.blur()});
+    inp.addEventListener("change",function(){
+      var n=parseNum(inp.value);
+      if(!isNaN(n))apply(Math.max(0,n));
+      render();
+    });
+    wrap.className="val";
+    lab.insertBefore(wrap,out);
+    wrap.appendChild(inp);wrap.appendChild(out);
+    NUM[key]=inp;
+  }
   Object.keys(SPEC).forEach(function(key){
+    makeNum(key,function(n){S[key]=n*D});
     $(key).addEventListener("input",function(){S[key]=parseFloat($(key).value)*D;render()});
   });
+  makeNum("rate",function(n){S.rate=Math.min(n,100)});
+  makeNum("sale",function(n){S.sale=n});
+  makeNum("saleYear",function(n){S.saleYear=Math.min(Math.round(n),40)});
   $("rate").addEventListener("input",function(){S.rate=parseFloat($("rate").value);render()});
   $("sale").addEventListener("input",function(){S.sale=parseFloat($("sale").value);render()});
   $("saleYear").addEventListener("input",function(){S.saleYear=parseInt($("saleYear").value,10);render()});
